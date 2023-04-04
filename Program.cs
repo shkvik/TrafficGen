@@ -1,6 +1,12 @@
 ﻿using System;
+using System.Net;
+using System.Net.Configuration;
+using System.Text;
 using System.Threading;
 using EasyModbus;
+using Newtonsoft.Json;
+using SNN.HttpServer;
+using SNN.Modbus;
 using TrafficGen.WebSocket;
 
 namespace TrafficGen
@@ -9,43 +15,12 @@ namespace TrafficGen
     {
         static void Main(string[] args)
         {
-            var Server = new WSServer();
-            Server.Start();
+            var webSocketServer = new WSServer();
 
-            var server = new ModbusServer();
+            var modbusGenerator = new MBGenerator();
 
-            server.Port = 502;
-            server.Listen();
+            var httpServer = new HttpServer();
 
-            var client = new EasyModbus.ModbusClient("127.0.0.10", 502);
-            
-            client.Connect();
-            short value = 0;
-            while (true)
-            {
-                
-                client.ReadHoldingRegisters(0, 2);
-
-                server.holdingRegisters.localArray[1] = value;
-                server.holdingRegisters.localArray[2] = value;
-                server.discreteInputs.localArray[1] = true;
-                server.inputRegisters.localArray[1] = 228;
-                server.coils.localArray[1] = true;
-                server.coils.localArray[2] = true;
-                client.WriteSingleRegister(0, value);
-                client.ReadHoldingRegisters(0, 2);
-                client.ReadInputRegisters(0, 2);
-                client.ReadDiscreteInputs(0, 2);
-                client.ReadCoils(0,2);
-                //var collection = client.ReadHoldingRegisters(0, 10);
-                //foreach(var item in collection)
-                //{
-                //    Console.Write(item);
-                //}
-                //Console.WriteLine();
-                Thread.Sleep(1000);
-                value = Convert.ToInt16(value + 1);
-            }
         }
     }
 }

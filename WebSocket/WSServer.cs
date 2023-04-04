@@ -23,6 +23,8 @@ namespace TrafficGen.WebSocket
             Server.NewMessageReceived += OnNewMessageReceived;
             Server.SessionClosed += OnSessionClosed;
 
+            Server.Start();
+
             SessionsSendingData= new Dictionary<string, Thread>();
         }
 
@@ -42,16 +44,6 @@ namespace TrafficGen.WebSocket
                 }
 
             }
-        }
-
-        public void Start()
-        {
-            Server.Start();
-        }
-
-        public void Stop()
-        {
-            Server.Stop();
         }
 
         private void OnNewSessionConnected(WebSocketSession session)
