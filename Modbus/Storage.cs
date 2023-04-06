@@ -30,55 +30,59 @@ namespace SNN.Modbus
         {
             Client = client;
             Server = server;
+
+            HoldingRegisters = new Dictionary<int, List<short>>();
+            DiscreteInputs = new Dictionary<int, List<bool>>();
+            InputRegisters = new Dictionary<int, List<short>>();
+            Coils = new Dictionary<int, List<bool>>();
         }
 
         public void PushHoldingRegister(int id, short value)
         {
-            PushShort(HoldingRegisters, id, value);
+            PushShort(this.HoldingRegisters, id, value);
         }
 
 
         public void PushDiscreteInput(int id, bool value)
         {
-            PushBool(DiscreteInputs, id, value);
+            PushBool(this.DiscreteInputs, id, value);
         }
 
         public void PushInputRegister(int id, short value)
         {
-            PushShort(InputRegisters, id, value);
+            PushShort(this.InputRegisters, id, value);
         }
 
         public void PushCoil(int id, bool value)
         {
-            PushBool(Coils, id, value);
+            PushBool(this.Coils, id, value);
         }
-
-
-
 
 
 
         private void PushBool(Dictionary<int, List<bool>> dict, int id, bool value)
         {
-            if (dict == null)
+            try
             {
-                dict = new Dictionary<int, List<bool>>();
+                if (dict.ContainsKey(id))
+                {
+                    dict[id].Add(value);
+                }
+                else
+                {
+                    dict.Add(id, new List<bool>() { value });
+                }
             }
-            if (!dict.ContainsKey(id))
+            catch (Exception error) 
             {
-                dict = new Dictionary<int, List<bool>>();
-                dict.Add(id, new List<bool>() { value });
+                Console.WriteLine(error.Message);
             }
-            else
-                dict[id].Add(value);
+
+                
         }
 
         private void PushShort(Dictionary<int, List<short>> dict, int id, short value)
         {
-            if(dict == null)
-            {
-                dict = new Dictionary<int, List<short>>();
-            }
             if (!dict.ContainsKey(id))
             {
                 dict.Add(id, new List<short>() { value });

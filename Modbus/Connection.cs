@@ -28,6 +28,14 @@ namespace SNN.Modbus
         OnlyRead, OnlyWrite, ReadWrite,
     }
 
+    public enum ReadFunction
+    {
+        ReadCoils,
+        DiscreteInputs,
+        HoldingRegisters,
+        InputRegisters
+    }
+
     class Connection
     {
         private ModbusServer ModbusServer;
@@ -40,13 +48,13 @@ namespace SNN.Modbus
 
         public int DefaultStartingAddress = 0;
         public int DefaultQuantity = 4;
-        public int DefaultDelay = 10;
+        public int DefaultDelay = 100;
 
         public delegate bool[] ReadBoolean(int startingAddress, int quantity);
         public delegate int[] ReadInt(int startingAddress, int quantity);
 
         private Dictionary<string, Thread> FunctionProcessing;
-
+        private Storage Storage;
 
         public Connection(byte[] serverIP, Mode mode = Mode.OnlyRead)
         {
@@ -58,8 +66,12 @@ namespace SNN.Modbus
             ModbusClient = new EasyModbus.ModbusClient(BytesToString(serverIP), 502);
             ModbusClient.Connect(BytesToString(serverIP), 502);
 
+            FunctionProcessing = new Dictionary<string, Thread>();
+
             Server = $"{serverIP}:502";
             Client = GetClientAddress(ModbusClient);
+
+            Storage = new Storage(Client, Server);
 
             switch (mode)
             {
@@ -71,32 +83,37 @@ namespace SNN.Modbus
 
         public void ReadWorking()
         {
-            FunctionProcessing = new Dictionary<string, Thread>
+            string[] functionsNames =
             {
-                { "ReadCoils", new Thread(new ParameterizedThreadStart(MainReadCoils)) },
-                { "ReadDiscreteInputs", new Thread(new ParameterizedThreadStart(MainReadDiscreteInputs)) },
-                { "ReadHoldingRegisters", new Thread(new ParameterizedThreadStart(MainReadHoldingRegisters)) },
-                { "ReadInputRegisters", new Thread(new ParameterizedThreadStart(MainReadInputRegisters)) }
+                "ReadCoils",
+                "ReadDiscreteInputs",
+                "ReadHoldingRegisters",
+                "ReadInputRegisters"
             };
-
-            foreach(var item in FunctionProcessing)
-                item.Value.Start(this);
             
+            FunctionProcessing.Add("ReadCoils", new Thread(new ParameterizedThreadStart(MainReadCoils)));
+            FunctionProcessing.Add("ReadDiscreteInputs", new Thread(new ParameterizedThreadStart(MainReadDiscreteInputs)));
+            FunctionProcessing.Add("ReadHoldingRegisters", new Thread(new ParameterizedThreadStart(MainReadHoldingRegisters)));
+            FunctionProcessing.Add("ReadInputRegisters", new Thread(new ParameterizedThreadStart(MainReadInputRegisters)));
+
+            foreach (string functionName in functionsNames)
+                FunctionProcessing[functionName].Start(this);
+
         }
 
         public void WriteWorking()
         {
-            FunctionProcessing = new Dictionary<string, Thread>
+            string[] functionsNames =
             {
-                { "WriteSingleCoil", new Thread(new ParameterizedThreadStart(MainWriteSingleCoil)) },
-                { "WriteSingleRegister", new Thread(new ParameterizedThreadStart(MainWriteSingleRegister)) },
-                //Опасная хуета
-                //{ "WriteMultipleCoils", new Thread(new ParameterizedThreadStart(MainWriteMultipleCoils)) },
-                //{ "WriteMultipleRegister", new Thread(new ParameterizedThreadStart(MainWriteMultipleRegisters)) }
+                "WriteSingleCoil",
+                "WriteSingleRegister",
             };
 
-            foreach (var item in FunctionProcessing)
-                item.Value.Start(this);
+            FunctionProcessing.Add("WriteSingleCoil", new Thread(new ParameterizedThreadStart(MainWriteSingleCoil)));
+            FunctionProcessing.Add("WriteSingleRegister", new Thread(new ParameterizedThreadStart(MainWriteSingleRegister)));
+        
+            foreach (var functionName in functionsNames)
+                FunctionProcessing[functionName].Start(this);
 
         }
 
@@ -104,7 +121,7 @@ namespace SNN.Modbus
         {
             if(o is Connection connection)
             {
-                ReadValues(connection, (ReadBoolean)ModbusClient.ReadCoils);
+                ReadValues(connection, (ReadBoolean)ModbusClient.ReadCoils, ReadFunction.ReadCoils);
             }
         }
 
@@ -112,7 +129,7 @@ namespace SNN.Modbus
         {
             if (o is Connection connection)
             {
-                ReadValues(connection, (ReadBoolean)ModbusClient.ReadDiscreteInputs);
+                ReadValues(connection, (ReadBoolean)ModbusClient.ReadDiscreteInputs, ReadFunction.DiscreteInputs);
             }
         }
 
@@ -120,7 +137,7 @@ namespace SNN.Modbus
         {
             if (o is Connection connection)
             {
-                ReadValues(connection, (ReadInt)ModbusClient.ReadHoldingRegisters);
+                ReadValues(connection, (ReadInt)ModbusClient.ReadHoldingRegisters, ReadFunction.HoldingRegisters);
             }
         }
 
@@ -128,7 +145,7 @@ namespace SNN.Modbus
         {
             if (o is Connection connection)
             {
-                ReadValues(connection, (ReadInt)ModbusClient.ReadInputRegisters);
+                ReadValues(connection, (ReadInt)ModbusClient.ReadInputRegisters, ReadFunction.InputRegisters);
             }
         }
 
@@ -164,7 +181,7 @@ namespace SNN.Modbus
             }
         }
 
-        private void ReadValues(Connection connection, object readFunction)
+        private void ReadValues(Connection connection, object readFunction, ReadFunction function)
         {
             var mutex = new Mutex();
 
@@ -184,6 +201,58 @@ namespace SNN.Modbus
 
                     Thread.Sleep(DefaultDelay);
                     mutex.ReleaseMutex();
+                }
+
+                switch (function)
+                {
+                    case ReadFunction.ReadCoils: FillCoils(); break;
+                    case ReadFunction.HoldingRegisters: FillHoldingRegister(); break;
+                    case ReadFunction.InputRegisters: FillInputRegister(); break;
+                    case ReadFunction.DiscreteInputs: FillDiscreteInputs(); break;
+                }
+
+            }
+        }
+        private void FillCoils(int quantity = 4)
+        {
+            for (int i = 0; i < quantity; i++)
+            {
+                for (int j = 0; j < quantity; j++)
+                {
+                    Storage.PushCoil(i, ModbusServer.coils.localArray[j]);
+                }
+            }
+        }
+
+        private void FillDiscreteInputs(int quantity = 4)
+        {
+            for (int i = 0; i < quantity; i++)
+            {
+                for (int j = 0; j < quantity; j++)
+                {
+                    Storage.PushDiscreteInput(i, ModbusServer.discreteInputs.localArray[j]);
+                }
+            }
+        }
+
+        private void FillInputRegister(int quantity = 4)
+        {
+            for (int i = 0; i < quantity; i++)
+            {
+                for (int j = 0; j < quantity; j++)
+                {
+                    Storage.PushInputRegister(i, ModbusServer.inputRegisters.localArray[j]);
+                }
+            }
+        }
+
+        private void FillHoldingRegister(int quantity = 4)
+        {
+            for (int i = 0; i < quantity; i++)
+            {
+                for (int j = 0; j < quantity; j++)
+                {
+                    Storage.PushHoldingRegister(i, ModbusServer.holdingRegisters.localArray[j]);
                 }
             }
         }
@@ -279,9 +348,11 @@ namespace SNN.Modbus
         {
             if (o is ReadBoolean readBoolean)
                 readBoolean.Invoke(DefaultStartingAddress, DefaultQuantity);
+                
 
             if (o is ReadInt readInt)
                 readInt.Invoke(DefaultStartingAddress, DefaultQuantity);
+
         }
 
 
