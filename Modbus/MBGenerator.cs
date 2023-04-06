@@ -28,6 +28,8 @@ namespace SNN.Modbus
 
         private Storage storage;
 
+        private Connection Connection;
+
         private void MainGenerateModbusTraffic(object o)
         {
             if (o is MBGenerator generator)
@@ -35,31 +37,31 @@ namespace SNN.Modbus
                 short value = 0;
                 while (true)
                 {
-                    Client.ReadHoldingRegisters(0, 2);
+                    //Client.ReadHoldingRegisters(0, 2);
 
-                    generator.Server.holdingRegisters.localArray[1] = value;
-                    generator.Server.discreteInputs.localArray[1] = true;
-                    generator.Server.inputRegisters.localArray[1] = 228;
-                    generator.Server.coils.localArray[1] = true;
-
-
-                    storage.PushHoldingRegister(1, generator.Server.inputRegisters.localArray[1]);
+                    //generator.Server.holdingRegisters.localArray[1] = value;
+                    //generator.Server.discreteInputs.localArray[1] = true;
+                    //generator.Server.inputRegisters.localArray[1] = 228;
+                    //generator.Server.coils.localArray[1] = true;
 
 
-                    generator.Client.WriteSingleRegister(0, value);
-                    generator.Client.ReadHoldingRegisters(0, 2);
-                    generator.Client.ReadInputRegisters(0, 2);
-                    generator.Client.ReadDiscreteInputs(0, 2);
-                    generator.Client.ReadCoils(0, 2);
+                    //storage.PushHoldingRegister(1, generator.Server.inputRegisters.localArray[1]);
 
-                    generator.Client2.WriteSingleRegister(0, value);
-                    generator.Client2.ReadHoldingRegisters(0, 2);
-                    generator.Client2.ReadInputRegisters(0, 2);
-                    generator.Client2.ReadDiscreteInputs(0, 2);
-                    generator.Client2.ReadCoils(0, 2);
 
-                    Thread.Sleep(1000);
-                    value = Convert.ToInt16(value + 1);
+                    //generator.Client.WriteSingleRegister(0, value);
+                    //generator.Client.ReadHoldingRegisters(0, 2);
+                    //generator.Client.ReadInputRegisters(0, 2);
+                    //generator.Client.ReadDiscreteInputs(0, 2);
+                    //generator.Client.ReadCoils(0, 2);
+
+                    //generator.Client2.WriteSingleRegister(0, value);
+                    //generator.Client2.ReadHoldingRegisters(0, 2);
+                    //generator.Client2.ReadInputRegisters(0, 2);
+                    //generator.Client2.ReadDiscreteInputs(0, 2);
+                    //generator.Client2.ReadCoils(0, 2);
+
+                    //Thread.Sleep(1000);
+                    //value = Convert.ToInt16(value + 1);
                 }
 
             }
@@ -92,6 +94,17 @@ namespace SNN.Modbus
             GetPort(Client2);
 
             storage = new Storage(GetPort(Client), "502");
+
+            Connection = new Connection(new byte[] { 127,0,0,111 }, Mode.ReadWrite);
+
+            var Connection2 = new Connection(new byte[] { 127, 0, 0, 112 }, Mode.ReadWrite);
+            var Connection3 = new Connection(new byte[] { 127, 0, 0, 113 }, Mode.ReadWrite);
+            var Connection4 = new Connection(new byte[] { 127, 0, 0, 114 }, Mode.ReadWrite);
+            var Connection5 = new Connection(new byte[] { 127, 0, 0, 115 }, Mode.ReadWrite);
+            var Connection6 = new Connection(new byte[] { 127, 0, 0, 116 }, Mode.ReadWrite);
+            var Connection7 = new Connection(new byte[] { 127, 0, 0, 117 }, Mode.ReadWrite);
+            var Connection8 = new Connection(new byte[] { 127, 0, 0, 118 }, Mode.ReadWrite);
+            var Connection9 = new Connection(new byte[] { 127, 0, 0, 119 }, Mode.ReadWrite);
 
             GenerateModbusTraffic = new Thread(new ParameterizedThreadStart(MainGenerateModbusTraffic));
             GenerateModbusTraffic.Start(this);

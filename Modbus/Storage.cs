@@ -60,6 +60,10 @@ namespace SNN.Modbus
 
         private void PushBool(Dictionary<int, List<bool>> dict, int id, bool value)
         {
+            if (dict == null)
+            {
+                dict = new Dictionary<int, List<bool>>();
+            }
             if (!dict.ContainsKey(id))
             {
                 dict = new Dictionary<int, List<bool>>();
@@ -71,9 +75,12 @@ namespace SNN.Modbus
 
         private void PushShort(Dictionary<int, List<short>> dict, int id, short value)
         {
-            if (!dict.ContainsKey(id))
+            if(dict == null)
             {
                 dict = new Dictionary<int, List<short>>();
+            }
+            if (!dict.ContainsKey(id))
+            {
                 dict.Add(id, new List<short>() { value });
             }
             else
