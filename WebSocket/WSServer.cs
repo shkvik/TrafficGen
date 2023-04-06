@@ -1,4 +1,5 @@
-﻿using SuperSocket.SocketBase;
+﻿using Newtonsoft.Json;
+using SuperSocket.SocketBase;
 using SuperWebSocket;
 using System;
 using System.Collections.Generic;
@@ -70,6 +71,11 @@ namespace TrafficGen.WebSocket
             {
                 Console.WriteLine(item.Key);
             }
+        }
+        private void PreparePacket()
+        {
+
+            //string responseString = JsonConvert.SerializeObject(msg)
         }
 
     }
