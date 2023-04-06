@@ -13,6 +13,8 @@ namespace TrafficGen
 {
     internal class Program
     {
+        public static bool Debug = false;
+
         static void Main(string[] args)
         {
             var webSocketServer = new WSServer();

@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TrafficGen;
 
 namespace SNN.Modbus
 {
@@ -19,76 +20,80 @@ namespace SNN.Modbus
         public string Client;
         public string Server;
 
+        public int FrameQuantity;
 
-        public Dictionary<int, List<short>> HoldingRegisters;
-        public Dictionary<int, List<bool>> DiscreteInputs;
-        public Dictionary<int, List<short>> InputRegisters;
-        public Dictionary<int, List<bool>> Coils;
+        public List<List<short>> HoldingRegisters;
+        public List<List<bool>> DiscreteInputs;
+        public List<List<short>> InputRegisters;
+        public List<List<bool>> Coils;
 
 
-        public Storage(string client, string server) 
+        public Storage(string client, string server, int quantity = 4) 
         {
             Client = client;
             Server = server;
 
-            HoldingRegisters = new Dictionary<int, List<short>>();
-            DiscreteInputs = new Dictionary<int, List<bool>>();
-            InputRegisters = new Dictionary<int, List<short>>();
-            Coils = new Dictionary<int, List<bool>>();
+            FrameQuantity = quantity;
+
+            HoldingRegisters = new List<List<short>>();
+            DiscreteInputs = new List<List<bool>>();
+            InputRegisters = new List<List<short>>();
+            Coils = new List<List<bool>>();
         }
 
-        public void PushHoldingRegister(int id, short value)
+        public void PushHoldingRegister(List<short> values)
         {
-            PushShort(this.HoldingRegisters, id, value);
+            PushShort(this.HoldingRegisters, values);
         }
 
-
-        public void PushDiscreteInput(int id, bool value)
+        public void PushDiscreteInput(List<bool> values)
         {
-            PushBool(this.DiscreteInputs, id, value);
+            PushBool(this.DiscreteInputs, values);
         }
 
-        public void PushInputRegister(int id, short value)
+        public void PushInputRegister(List<short> values)
         {
-            PushShort(this.InputRegisters, id, value);
+            PushShort(this.InputRegisters, values);
         }
 
-        public void PushCoil(int id, bool value)
+        public void PushCoil(List<bool> values)
         {
-            PushBool(this.Coils, id, value);
+            PushBool(this.Coils, values);
         }
 
 
 
-        private void PushBool(Dictionary<int, List<bool>> dict, int id, bool value)
+        private void PushBool(List<List<bool>> dict, List<bool> values)
         {
             try
             {
-                if (dict.ContainsKey(id))
-                {
-                    dict[id].Add(value);
-                }
-                else
-                {
-                    dict.Add(id, new List<bool>() { value });
-                }
+                dict.Add(values);
             }
             catch (Exception error) 
             {
-                Console.WriteLine(error.Message);
+                if (Program.Debug)
+                {
+                    Console.WriteLine(error.Message);
+                }
             }
 
                 
         }
 
-        private void PushShort(Dictionary<int, List<short>> dict, int id, short value)
+        private void PushShort(List<List<short>> dict, List<short> values)
         {
-            if (!dict.ContainsKey(id))
+            try
             {
-                dict.Add(id, new List<short>() { value });
+                dict.Add(values);       
             }
-            else
-                dict[id].Add(value);
+            catch(Exception error)
+            {
+                if (Program.Debug)
+                {
+                    Console.WriteLine(error.Message);
+                }
+            }
+            
         }
     }
 }

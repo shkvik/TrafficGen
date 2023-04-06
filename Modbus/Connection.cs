@@ -14,6 +14,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using TrafficGen;
 
 namespace SNN.Modbus
 {
@@ -48,13 +49,13 @@ namespace SNN.Modbus
 
         public int DefaultStartingAddress = 0;
         public int DefaultQuantity = 4;
-        public int DefaultDelay = 100;
+        public int DefaultDelay = 1000;
 
         public delegate bool[] ReadBoolean(int startingAddress, int quantity);
         public delegate int[] ReadInt(int startingAddress, int quantity);
 
         private Dictionary<string, Thread> FunctionProcessing;
-        private Storage Storage;
+        public static Storage Storage;
 
         public Connection(byte[] serverIP, Mode mode = Mode.OnlyRead)
         {
@@ -64,7 +65,9 @@ namespace SNN.Modbus
             ModbusServer.Listen();
 
             ModbusClient = new EasyModbus.ModbusClient(BytesToString(serverIP), 502);
+            ModbusClient.ConnectionTimeout = 2000;
             ModbusClient.Connect(BytesToString(serverIP), 502);
+
 
             FunctionProcessing = new Dictionary<string, Thread>();
 
@@ -196,7 +199,10 @@ namespace SNN.Modbus
                     }
                     catch (Exception error)
                     {
-                        Console.WriteLine(error.Message);
+                        if (Program.Debug)
+                        {
+                            Console.WriteLine(error.Message);
+                        }
                     }
 
                     Thread.Sleep(DefaultDelay);
@@ -215,46 +221,54 @@ namespace SNN.Modbus
         }
         private void FillCoils(int quantity = 4)
         {
+            var result = new List<bool>();
+
             for (int i = 0; i < quantity; i++)
             {
-                for (int j = 0; j < quantity; j++)
-                {
-                    Storage.PushCoil(i, ModbusServer.coils.localArray[j]);
-                }
+                result.Add(ModbusServer.coils.localArray[i + 1]); 
             }
+
+            Storage.PushCoil(result);
+
         }
 
         private void FillDiscreteInputs(int quantity = 4)
         {
+            var result = new List<bool>();
+
             for (int i = 0; i < quantity; i++)
             {
-                for (int j = 0; j < quantity; j++)
-                {
-                    Storage.PushDiscreteInput(i, ModbusServer.discreteInputs.localArray[j]);
-                }
+                result.Add(ModbusServer.discreteInputs.localArray[i + 1]);
             }
+
+            Storage.PushDiscreteInput(result);
         }
 
         private void FillInputRegister(int quantity = 4)
         {
+
+            var result = new List<short>();
+
             for (int i = 0; i < quantity; i++)
             {
-                for (int j = 0; j < quantity; j++)
-                {
-                    Storage.PushInputRegister(i, ModbusServer.inputRegisters.localArray[j]);
-                }
+                result.Add(ModbusServer.inputRegisters.localArray[i + 1]);
             }
+
+            Storage.PushInputRegister(result);
         }
 
         private void FillHoldingRegister(int quantity = 4)
         {
+
+            var result = new List<short>();
+
             for (int i = 0; i < quantity; i++)
             {
-                for (int j = 0; j < quantity; j++)
-                {
-                    Storage.PushHoldingRegister(i, ModbusServer.holdingRegisters.localArray[j]);
-                }
+                result.Add(ModbusServer.holdingRegisters.localArray[i + 1]);
             }
+
+            Storage.PushHoldingRegister(result);
+
         }
 
         private void WriteValues(
@@ -284,7 +298,10 @@ namespace SNN.Modbus
                     }
                     catch (Exception error)
                     {
-                        Console.WriteLine(error.Message);
+                        if (Program.Debug)
+                        {
+                            Console.WriteLine(error.Message);
+                        }
                     }
 
                     Thread.Sleep(DefaultDelay);
@@ -321,7 +338,10 @@ namespace SNN.Modbus
                     }
                     catch (Exception error)
                     {
-                        Console.WriteLine(error.Message);
+                        if (Program.Debug)
+                        {
+                            Console.WriteLine(error.Message);
+                        }
                     }
                 }
             }
@@ -336,7 +356,10 @@ namespace SNN.Modbus
                     }
                     catch (Exception error)
                     {
-                        Console.WriteLine(error.Message);
+                        if (Program.Debug)
+                        {
+                            Console.WriteLine(error.Message);
+                        }
                     }
                 }
             }

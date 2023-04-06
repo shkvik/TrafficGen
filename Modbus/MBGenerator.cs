@@ -35,6 +35,7 @@ namespace SNN.Modbus
             if (o is MBGenerator generator)
             {
                 short value = 0;
+                int counter = 0;
                 while (true)
                 {
                     //Client.ReadHoldingRegisters(0, 2);
@@ -59,8 +60,18 @@ namespace SNN.Modbus
                     //generator.Client2.ReadInputRegisters(0, 2);
                     //generator.Client2.ReadDiscreteInputs(0, 2);
                     //generator.Client2.ReadCoils(0, 2);
-
-                    //Thread.Sleep(1000);
+                    Thread.Sleep(1000);
+                    for (int i = 0;i < 4; i++)
+                    {
+                        if (Connection.Storage.HoldingRegisters[counter] != null)
+                        {
+                            Console.WriteLine(Connection.Storage.HoldingRegisters[counter][i]);
+                        }
+                        
+                    }
+                    Console.WriteLine("---------------------------------------------------------");
+                    
+                    counter++;
                     //value = Convert.ToInt16(value + 1);
                 }
 
