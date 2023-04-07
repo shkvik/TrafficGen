@@ -1,6 +1,7 @@
 ﻿using EasyModbus;
 using Newtonsoft.Json.Linq;
 using SNN.Modbus.Json;
+using SNN.WebSocket;
 using SuperSocket.SocketEngine.Configuration;
 using SuperWebSocket;
 using System;
@@ -29,6 +30,8 @@ namespace SNN.Modbus
         private Storage storage;
 
         private Connection Connection;
+
+        private StreamHandler StreamHandler;
 
         private void MainGenerateModbusTraffic(object o)
         {
@@ -60,17 +63,21 @@ namespace SNN.Modbus
                     //generator.Client2.ReadInputRegisters(0, 2);
                     //generator.Client2.ReadDiscreteInputs(0, 2);
                     //generator.Client2.ReadCoils(0, 2);
+
+
+
+
                     Thread.Sleep(1000);
-                    for (int i = 0;i < 4; i++)
+                    for (int i = 0; i < 4; i++)
                     {
                         if (Connection.Storage.HoldingRegisters[counter] != null)
                         {
                             Console.WriteLine(Connection.Storage.HoldingRegisters[counter][i]);
                         }
-                        
+
                     }
                     Console.WriteLine("---------------------------------------------------------");
-                    
+
                     counter++;
                     //value = Convert.ToInt16(value + 1);
                 }
@@ -80,7 +87,7 @@ namespace SNN.Modbus
 
         public MBGenerator()
         {
-            
+            StreamHandler = new StreamHandler();
 
             Server = new EasyModbus.ModbusServer();
             Server.LocalIPAddress = new IPAddress(new byte[] { 127, 0, 0, 228 });
@@ -119,14 +126,6 @@ namespace SNN.Modbus
 
             GenerateModbusTraffic = new Thread(new ParameterizedThreadStart(MainGenerateModbusTraffic));
             GenerateModbusTraffic.Start(this);
-        }
-
-        public void PrepareSendData()
-        {
-            //var data = new DataJson();
-
-            var discreteInputs = new DiscreteInputs();
-            //discreteInputs.Registers
         }
 
 

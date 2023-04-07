@@ -17,11 +17,12 @@ namespace TrafficGen
 
         static void Main(string[] args)
         {
-            var webSocketServer = new WSServer();
 
             var modbusGenerator = new MBGenerator();
 
             var httpServer = new HttpServer();
+
+            var webSocketServer = new WSServer();
 
         }
     }

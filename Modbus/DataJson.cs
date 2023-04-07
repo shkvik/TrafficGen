@@ -7,21 +7,31 @@ using System.Threading.Tasks;
 
 namespace SNN.Modbus.Json
 {
-    public class TimeSerias16b   
+    public class TimeSerias<Type>
     {
         public int Id;
-        public List<int> TimeSerias = new List<int>(); 
+        public List<Type> Values = new List<Type>(); 
     } 
-    public class TimeSeriasBool  { public int Id; public List<bool> TimeSerias = new List<bool>(); }
-
 
     public class DiscreteInputs     
     {
-        public List<TimeSeriasBool> Registers = new List<TimeSeriasBool>();
+        public List<TimeSerias<bool>> Registers = new List<TimeSerias<bool>>();
     }
-    public class Coils              { public List<TimeSeriasBool> Registers = new List<TimeSeriasBool>(); }
-    public class InputRegisters     { public List<TimeSerias16b>  Registers = new List<TimeSerias16b>();  }
-    public class HoldingRegisters   { public List<TimeSerias16b>  Registers = new List<TimeSerias16b>();  }
+
+    public class Coils              
+    {
+        public List<TimeSerias<bool>> Registers = new List<TimeSerias<bool>>();
+    }
+
+    public class InputRegisters     
+    { 
+        public List<TimeSerias<int>>  Registers = new List<TimeSerias<int>>();  
+    }
+
+    public class HoldingRegisters   
+    {
+        public List<TimeSerias<int>> Registers = new List<TimeSerias<int>>();
+    }
 
 
     public class FunctionsActivity
@@ -36,23 +46,23 @@ namespace SNN.Modbus.Json
         public int WriteMultipleRegister;
     }
 
-    public class Modbus 
+    public class ModbusData 
     {
         public FunctionsActivity FunctionsActivity = new FunctionsActivity();
 
-        public HoldingRegisters HoldingRegisters = new HoldingRegisters();
-        public DiscreteInputs DiscreteInputs = new DiscreteInputs();
-        public InputRegisters InputRegisters = new InputRegisters();
-        public Coils Coils = new Coils();
+        public List<TimeSerias<short>>    HoldingRegisters = new List<TimeSerias<short>>();
+        public List<TimeSerias<bool>>   DiscreteInputs = new List<TimeSerias<bool>>();
+        public List<TimeSerias<short>>    InputRegisters = new List<TimeSerias<short>>();
+        public List<TimeSerias<bool>>   Coils = new List<TimeSerias<bool>>();
     }
 
     public class ConnectionPacket
     {
-        public int Id;
-        public string Source;
-        public string Destination;
+        public long TimeStamp;
+        public string Client;
+        public string Server;
         public string Protocol;
-        public Modbus Modbus = new Modbus();
+        public ModbusData Modbus = new ModbusData();
     }
 
     public class DataJson

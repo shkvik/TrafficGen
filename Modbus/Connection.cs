@@ -164,6 +164,7 @@ namespace SNN.Modbus
         {
             if (o is Connection connection)
             {
+                
                 WriteValues(connection, (Action<int, int>)ModbusClient.WriteSingleRegister, singleRegister: 20);
             }
         }
@@ -288,10 +289,11 @@ namespace SNN.Modbus
                     mutex.WaitOne();
                     try
                     {
+                        Random rand = new Random();
                         UseWriteDelegate(
                             writeFunction,
                             singleCoil,
-                            singleRegister,
+                            singleRegister: Convert.ToInt16(rand.Next(0, 65000)),
                             multipleCoils,
                             multipleRegisters
                         );

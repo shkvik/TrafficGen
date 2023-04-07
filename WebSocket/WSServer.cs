@@ -1,9 +1,13 @@
 ﻿using Newtonsoft.Json;
+using SNN.Modbus;
+using SNN.WebSocket;
 using SuperSocket.SocketBase;
 using SuperWebSocket;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
+
 
 namespace TrafficGen.WebSocket
 {
@@ -14,6 +18,8 @@ namespace TrafficGen.WebSocket
         private Dictionary<string, Thread> SessionsSendingData;
 
         private static object syncObject = new object();
+
+        public StreamHandler Stream;
 
         public WSServer()
         {
@@ -26,7 +32,13 @@ namespace TrafficGen.WebSocket
 
             Server.Start();
 
-            SessionsSendingData= new Dictionary<string, Thread>();
+
+            Stream = new StreamHandler();
+            Thread.Sleep(4000);
+            SessionsSendingData = new Dictionary<string, Thread>();
+            
+
+
         }
 
         private void MainSendingData(object o)
@@ -38,10 +50,28 @@ namespace TrafficGen.WebSocket
                 {
                     lock(syncObject)
                     {
-                        session.Send("Hey you");
+                        try
+                        {
+                            Stream.PasteFrameToBuffer(
+                            registers: Connection.Storage.HoldingRegisters,
+                            buffer: Stream.BufferHoldingRegisters
+                        );
+
+                            var message = Stream.BuildJsonPacket(
+                                "client",
+                                "server"
+                            );
+
+                            session.Send(message);
+                        }
+                        catch(Exception error)
+                        {
+                            Console.WriteLine(error.Message);
+                        }
+                        
                     }
                     
-                    Thread.Sleep(1000);
+                    Thread.Sleep(2000);
                 }
 
             }
