@@ -52,10 +52,10 @@ namespace TrafficGen.WebSocket
                     {
                         try
                         {
-                            Stream.PasteFrameToBuffer(
-                            registers: Connection.Storage.HoldingRegisters,
-                            buffer: Stream.BufferHoldingRegisters
-                        );
+                            //Stream.PasteFrameToBuffer(
+                            //    registers: Connection.Storage.HoldingRegisters,
+                            //    buffer: Stream.BufferHoldingRegisters
+                            //);
 
                             var message = Stream.BuildJsonPacket(
                                 "client",

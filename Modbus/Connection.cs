@@ -43,7 +43,7 @@ namespace SNN.Modbus
 
         private ModbusClient ModbusClient;
 
-        public int Id { get; set; }
+        public Guid Guid { get; private set; }
         public string Client { get; set; }
         public string Server { get; set; }
 
@@ -55,7 +55,7 @@ namespace SNN.Modbus
         public delegate int[] ReadInt(int startingAddress, int quantity);
 
         private Dictionary<string, Thread> FunctionProcessing;
-        public static Storage Storage;
+        public Storage Storage;
 
         public Connection(byte[] serverIP, Mode mode = Mode.OnlyRead)
         {
@@ -68,13 +68,14 @@ namespace SNN.Modbus
             ModbusClient.ConnectionTimeout = 2000;
             ModbusClient.Connect(BytesToString(serverIP), 502);
 
-
             FunctionProcessing = new Dictionary<string, Thread>();
 
             Server = $"{serverIP}:502";
             Client = GetClientAddress(ModbusClient);
 
             Storage = new Storage(Client, Server);
+            Guid = Guid.NewGuid();
+
 
             switch (mode)
             {
@@ -188,7 +189,7 @@ namespace SNN.Modbus
         private void ReadValues(Connection connection, object readFunction, ReadFunction function)
         {
             var mutex = new Mutex();
-
+            Random rand = new Random();
             while (true)
             {
                 if (connection.ModbusClient.Connected)
@@ -210,13 +211,35 @@ namespace SNN.Modbus
                     mutex.ReleaseMutex();
                 }
 
+                var ReadCoils = rand.Next(0, 40);
+                var ReadHoldingRegisters = rand.Next(0, 40);
+                var ReadInputRegisters = rand.Next(0, 40);
+                var ReadDiscreteInputs = rand.Next(0, 40);
+
                 switch (function)
                 {
-                    case ReadFunction.ReadCoils: FillCoils(); break;
-                    case ReadFunction.HoldingRegisters: FillHoldingRegister(); break;
-                    case ReadFunction.InputRegisters: FillInputRegister(); break;
-                    case ReadFunction.DiscreteInputs: FillDiscreteInputs(); break;
+                    case ReadFunction.ReadCoils:
+                        Storage.PushActivityFunction(Function.ReadCoils, ReadCoils);
+                        FillCoils(); 
+                        break;
+
+                    case ReadFunction.HoldingRegisters:
+                        Storage.PushActivityFunction(Function.ReadHoldingRegisters, ReadHoldingRegisters);
+                        FillHoldingRegister(); 
+                        break;
+
+                    case ReadFunction.InputRegisters:
+                        Storage.PushActivityFunction(Function.ReadInputRegisters, ReadInputRegisters);
+                        FillInputRegister(); 
+                        break;
+
+                    case ReadFunction.DiscreteInputs:
+                        Storage.PushActivityFunction(Function.ReadDiscreteInputs, ReadDiscreteInputs);
+                        FillDiscreteInputs(); 
+                        break;
                 }
+
+                Storage.UpdateActivityFunctions();
 
             }
         }

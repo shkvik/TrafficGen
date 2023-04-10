@@ -33,7 +33,6 @@ namespace SNN.Modbus.Json
         public List<TimeSerias<int>> Registers = new List<TimeSerias<int>>();
     }
 
-
     public class FunctionsActivity
     {
         public int ReadCoils;

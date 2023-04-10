@@ -70,10 +70,10 @@ namespace SNN.Modbus
                     Thread.Sleep(1000);
                     for (int i = 0; i < 4; i++)
                     {
-                        if (Connection.Storage.HoldingRegisters[counter] != null)
-                        {
-                            Console.WriteLine(Connection.Storage.HoldingRegisters[counter][i]);
-                        }
+                        //if (Connection.Storage.HoldingRegisters[counter] != null)
+                        //{
+                        //    Console.WriteLine(Connection.Storage.HoldingRegisters[counter][i]);
+                        //}
 
                     }
                     Console.WriteLine("---------------------------------------------------------");
