@@ -46,24 +46,19 @@ namespace SNN.Modbus
         private void InitBuffer()
         {
             this.Guid = Guid.NewGuid();
-            this.TimeSerias = new List<T>();
+            this.TimeSerias = new List<T>(BufferSize);
             this.CurrentCount = 0;
 
-            for (int i = 0;i < BufferSize;i++)
-            {
-                if (typeof(T) == typeof(int) || typeof(T) == typeof(short))
-                    TimeSerias.Add((T)(object)0);
+            for (int i = 0; i < BufferSize; i++)
+                TimeSerias.Add(default(T));
 
-                if (typeof(T) == typeof(bool))
-                    TimeSerias.Add((T)(object)false);
-            }
         }
 
         public void Push(T value)
         {
             CheckUpdateCounter();
 
-            if (CurrentCount > BufferSize)
+            if (CurrentCount > BufferSize - 1)
             {
                 TimeSerias.RemoveAt(0);
                 TimeSerias.Add(value);
@@ -246,6 +241,18 @@ namespace SNN.Modbus
             string bufferName = function.ToString();
             FieldInfo fieldInfo = this.GetType().GetField(bufferName);
             var buffer = (Buffer<int>)fieldInfo.GetValue(this);
+            try
+            {
+
+            }
+            catch(Exception error)
+            {
+                if (Program.Debug)
+                {
+                    Console.WriteLine("class Storage : PushActivityFunction");
+                    Console.WriteLine(error.Message);
+                }
+            }
             buffer.Push(value);
         }
 

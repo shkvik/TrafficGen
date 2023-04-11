@@ -13,7 +13,7 @@ namespace TrafficGen
 {
     internal class Program
     {
-        public static bool Debug = false;
+        public static bool Debug = true;
 
         static void Main(string[] args)
         {

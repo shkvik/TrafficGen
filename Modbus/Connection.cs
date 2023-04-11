@@ -76,6 +76,16 @@ namespace SNN.Modbus
             Storage = new Storage(Client, Server);
             Guid = Guid.NewGuid();
 
+            for(int i = 0; i < 4; i++)
+            {
+                Storage.HoldingRegisters.AddColumn();
+                Storage.DiscreteInputs.AddColumn();
+                Storage.InputRegisters.AddColumn();
+                Storage.Coils.AddColumn();
+            }
+            
+
+
 
             switch (mode)
             {
@@ -95,10 +105,10 @@ namespace SNN.Modbus
                 "ReadInputRegisters"
             };
             
-            FunctionProcessing.Add("ReadCoils", new Thread(new ParameterizedThreadStart(MainReadCoils)));
-            FunctionProcessing.Add("ReadDiscreteInputs", new Thread(new ParameterizedThreadStart(MainReadDiscreteInputs)));
-            FunctionProcessing.Add("ReadHoldingRegisters", new Thread(new ParameterizedThreadStart(MainReadHoldingRegisters)));
-            FunctionProcessing.Add("ReadInputRegisters", new Thread(new ParameterizedThreadStart(MainReadInputRegisters)));
+            FunctionProcessing.Add("ReadCoils",             new Thread(new ParameterizedThreadStart(MainReadCoils)));
+            FunctionProcessing.Add("ReadDiscreteInputs",    new Thread(new ParameterizedThreadStart(MainReadDiscreteInputs)));
+            FunctionProcessing.Add("ReadHoldingRegisters",  new Thread(new ParameterizedThreadStart(MainReadHoldingRegisters)));
+            FunctionProcessing.Add("ReadInputRegisters",    new Thread(new ParameterizedThreadStart(MainReadInputRegisters)));
 
             foreach (string functionName in functionsNames)
                 FunctionProcessing[functionName].Start(this);
@@ -110,11 +120,11 @@ namespace SNN.Modbus
             string[] functionsNames =
             {
                 "WriteSingleCoil",
-                "WriteSingleRegister",
+                "WriteSingleRegister"
             };
 
-            FunctionProcessing.Add("WriteSingleCoil", new Thread(new ParameterizedThreadStart(MainWriteSingleCoil)));
-            FunctionProcessing.Add("WriteSingleRegister", new Thread(new ParameterizedThreadStart(MainWriteSingleRegister)));
+            FunctionProcessing.Add("WriteSingleCoil",       new Thread(new ParameterizedThreadStart(MainWriteSingleCoil)));
+            FunctionProcessing.Add("WriteSingleRegister",   new Thread(new ParameterizedThreadStart(MainWriteSingleRegister)));
         
             foreach (var functionName in functionsNames)
                 FunctionProcessing[functionName].Start(this);
@@ -174,7 +184,13 @@ namespace SNN.Modbus
         {
             if (o is Connection connection)
             {
-                WriteValues(connection, (Action<int, bool[]>)ModbusClient.WriteMultipleCoils, multipleCoils: new bool[] { true });
+                WriteValues(connection, (Action<int, bool[]>)ModbusClient.WriteMultipleCoils,
+                    multipleCoils: new bool[]
+                    { 
+                        true,
+                        false,
+                        true
+                    });
             }
         }
 
@@ -198,11 +214,42 @@ namespace SNN.Modbus
                     try
                     {
                         UseReadDelegate(readFunction);
+
+                        var ReadCoils = rand.Next(0, 40);
+                        var ReadHoldingRegisters = rand.Next(0, 40);
+                        var ReadInputRegisters = rand.Next(0, 40);
+                        var ReadDiscreteInputs = rand.Next(0, 40);
+
+                        switch (function)
+                        {
+                            case ReadFunction.ReadCoils:
+                                Storage.PushActivityFunction(Function.ReadCoils, ReadCoils);
+                                FillCoils();
+                                break;
+
+                            case ReadFunction.HoldingRegisters:
+                                Storage.PushActivityFunction(Function.ReadHoldingRegisters, ReadHoldingRegisters);
+                                FillHoldingRegister();
+                                break;
+
+                            case ReadFunction.InputRegisters:
+                                Storage.PushActivityFunction(Function.ReadInputRegisters, ReadInputRegisters);
+                                FillInputRegister();
+                                break;
+
+                            case ReadFunction.DiscreteInputs:
+                                Storage.PushActivityFunction(Function.ReadDiscreteInputs, ReadDiscreteInputs);
+                                FillDiscreteInputs();
+                                break;
+                        }
+
+                        Storage.UpdateActivityFunctions();
                     }
                     catch (Exception error)
                     {
                         if (Program.Debug)
                         {
+                            Console.WriteLine("class Connection : ReadValues");
                             Console.WriteLine(error.Message);
                         }
                     }
@@ -211,35 +258,7 @@ namespace SNN.Modbus
                     mutex.ReleaseMutex();
                 }
 
-                var ReadCoils = rand.Next(0, 40);
-                var ReadHoldingRegisters = rand.Next(0, 40);
-                var ReadInputRegisters = rand.Next(0, 40);
-                var ReadDiscreteInputs = rand.Next(0, 40);
-
-                switch (function)
-                {
-                    case ReadFunction.ReadCoils:
-                        Storage.PushActivityFunction(Function.ReadCoils, ReadCoils);
-                        FillCoils(); 
-                        break;
-
-                    case ReadFunction.HoldingRegisters:
-                        Storage.PushActivityFunction(Function.ReadHoldingRegisters, ReadHoldingRegisters);
-                        FillHoldingRegister(); 
-                        break;
-
-                    case ReadFunction.InputRegisters:
-                        Storage.PushActivityFunction(Function.ReadInputRegisters, ReadInputRegisters);
-                        FillInputRegister(); 
-                        break;
-
-                    case ReadFunction.DiscreteInputs:
-                        Storage.PushActivityFunction(Function.ReadDiscreteInputs, ReadDiscreteInputs);
-                        FillDiscreteInputs(); 
-                        break;
-                }
-
-                Storage.UpdateActivityFunctions();
+                
 
             }
         }
@@ -316,7 +335,7 @@ namespace SNN.Modbus
                         UseWriteDelegate(
                             writeFunction,
                             singleCoil,
-                            singleRegister: Convert.ToInt16(rand.Next(0, 65000)),
+                            singleRegister: Convert.ToInt16(rand.Next(0, 10000)),
                             multipleCoils,
                             multipleRegisters
                         );
@@ -325,6 +344,7 @@ namespace SNN.Modbus
                     {
                         if (Program.Debug)
                         {
+                            Console.WriteLine("class Connection : WriteValues");
                             Console.WriteLine(error.Message);
                         }
                     }
@@ -344,27 +364,36 @@ namespace SNN.Modbus
             int[] multipleRegisters = null
         )
         {
+            Random rand = new Random();
 
             if (o is Action<int,bool> writeSingleCoil)
                 if(singleCoil != null)
+                {
+                    Storage.WriteSingleCoil.Push(rand.Next(0, 40));
                     writeSingleCoil.Invoke(DefaultStartingAddress, (bool)singleCoil);
-               
+                }
+                                 
             if (o is Action<int,int> writeSingleRegister)
                 if (singleRegister != null)
+                {
+                    Storage.WriteSingleRegister.Push(rand.Next(0, 40));
                     writeSingleRegister.Invoke(DefaultStartingAddress, (int)singleRegister);
-
+                }
+                   
             if (o is Action<int, bool[]> writeMultipleCoils)
             {
                 if (multipleCoils != null)
                 {
                     try
                     {
+                        Storage.WriteMultipleCoils.Push(rand.Next(0, 40));
                         writeMultipleCoils.Invoke(DefaultStartingAddress, multipleCoils);
                     }
                     catch (Exception error)
                     {
                         if (Program.Debug)
                         {
+                            Console.WriteLine("class Connection : UseWriteDelegate : writeMultipleCoils");
                             Console.WriteLine(error.Message);
                         }
                     }
@@ -377,12 +406,14 @@ namespace SNN.Modbus
                 {
                     try
                     {
+                        Storage.WriteMultipleCoils.Push(rand.Next(0, 40));
                         writeMultipleRegisters.Invoke(DefaultStartingAddress, multipleRegisters);
                     }
                     catch (Exception error)
                     {
                         if (Program.Debug)
                         {
+                            Console.WriteLine("class Connection : UseWriteDelegate : writeMultipleRegisters");
                             Console.WriteLine(error.Message);
                         }
                     }
@@ -396,9 +427,8 @@ namespace SNN.Modbus
         {
             if (o is ReadBoolean readBoolean)
                 readBoolean.Invoke(DefaultStartingAddress, DefaultQuantity);
-                
 
-            if (o is ReadInt readInt)
+            else if (o is ReadInt readInt)
                 readInt.Invoke(DefaultStartingAddress, DefaultQuantity);
 
         }
