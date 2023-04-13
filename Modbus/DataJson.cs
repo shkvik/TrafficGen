@@ -65,22 +65,18 @@ namespace SNN.Modbus.Json
         public int trained;
     }
 
-    public class ConnectionJson
+    public class ConnectionDataPage
     {
-
         public string guid;
-        public string client;
-        public string server;
 
         public List<string> holdingRegisters;
         public List<string> discreteInputs;
         public List<string> inputRegisters;
         public List<string> coils;
-
     }
 
     public class ConnectionsJson
     {
-        public List<ConnectionJson> connections = new List<ConnectionJson>();
+        public List<ConnectionDataPage> connections = new List<ConnectionDataPage>();
     }
 }

@@ -11,6 +11,7 @@ using System.Reflection;
 using System.Threading;
 using System.Xml.Linq;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace SNN.Modbus
 {
@@ -42,6 +43,7 @@ namespace SNN.Modbus
             if (o is MBGenerator generator)
             {
                 int counter = 0;
+                Console.WriteLine($" | Connection {Connections[2].Guid} | ");
                 Connections[2].Storage.PrintAllGuids();
 
                 
@@ -52,9 +54,9 @@ namespace SNN.Modbus
                     Thread.Sleep(1000);
                     if (false)
                     {
-                        Console.WriteLine(Storage
-                            .GetTsSequenseByGuid(Connections[2].Storage
-                                .ActivityCoils.Guid.ToString()));
+                        //Console.WriteLine(Storage
+                        //    .GetTsSequenseByGuid(Connections[2].Storage
+                        //        .ActivityCoils.Guid.ToString()));
                     }
 
                     counter++;
@@ -75,6 +77,11 @@ namespace SNN.Modbus
             string ip = ((System.Net.IPEndPoint) reflectionClient.Client.LocalEndPoint).Address.ToString();
 
             return $"{ip}:{port}";
+        }
+
+        public Connection GetConnection(string guid)
+        {
+            return Connections.Where(connection => connection.Guid.ToString() == guid).First();
         }
 
         public IEnumerable<Connection> GetConnections()

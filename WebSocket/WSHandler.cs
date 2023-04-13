@@ -16,7 +16,8 @@ namespace SNN.WebSocket
     public enum Action
     {
         Error,
-        ReturnConections,
+        GetConections,
+        GetConnectionData,
         TimeSeriasStream
     }
 
@@ -78,6 +79,26 @@ namespace SNN.WebSocket
                     trained = 50
                 };
             }
+        }
+
+        public ConnectionDataPage GetConnectionDataGuidsFromStorage(string ConnectionGuid)
+        {
+            return new ConnectionDataPage() 
+            {
+                guid = ConnectionGuid,
+
+                holdingRegisters = _generator.GetConnection(ConnectionGuid)
+                    .Storage.HoldingRegisters.TimeSeriesList.Select(x => x.Guid.ToString()).ToList(),
+
+                discreteInputs = _generator.GetConnection(ConnectionGuid)
+                    .Storage.DiscreteInputs.TimeSeriesList.Select(x => x.Guid.ToString()).ToList(),
+
+                inputRegisters = _generator.GetConnection(ConnectionGuid)
+                    .Storage.InputRegisters.TimeSeriesList.Select(x => x.Guid.ToString()).ToList(),
+
+                coils = _generator.GetConnection(ConnectionGuid)
+                    .Storage.Coils.TimeSeriesList.Select(x => x.Guid.ToString()).ToList(),
+            };
         }
     }
 }

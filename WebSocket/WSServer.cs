@@ -61,7 +61,10 @@ namespace TrafficGen.WebSocket
                         }
                         catch(Exception error)
                         {
-                            Console.WriteLine(error.Message);
+                            if (Program.Debug)
+                            {
+                                Console.WriteLine(error.Message);
+                            }
                         }
                         
                     }
@@ -74,9 +77,6 @@ namespace TrafficGen.WebSocket
 
         private void OnNewSessionConnected(WebSocketSession session)
         {
-            TimeSeriesStreamSessions.Add(session.SessionID, new Thread(new ParameterizedThreadStart(MainTimeSeriesStream)));
-            TimeSeriesStreamSessions[session.SessionID].Start(session);
-
             Console.WriteLine($"Session {session.SessionID} connected");
         }
 
@@ -88,12 +88,16 @@ namespace TrafficGen.WebSocket
 
                     break;
 
-                case SNN.WebSocket.Action.ReturnConections: 
+                case SNN.WebSocket.Action.GetConections: 
                     SendConnectionsGuids(session);
                     break;
 
-                case SNN.WebSocket.Action.TimeSeriasStream:
+                case SNN.WebSocket.Action.GetConnectionData:
+                    SendConnectionDataGuids(session, message); 
+                    break;
 
+                case SNN.WebSocket.Action.TimeSeriasStream:
+                    OpenNewStream(session, message);
                     break;
 
                 default:
@@ -123,15 +127,27 @@ namespace TrafficGen.WebSocket
 
             var threadArgs = new Tuple<WebSocketSession, string>(session, guid);
 
-            TimeSeriesStreamSessions.Add(session.SessionID, new Thread(new ParameterizedThreadStart(MainTimeSeriesStream)));
+            TimeSeriesStreamSessions.Add(session.SessionID,
+                new Thread(new ParameterizedThreadStart(MainTimeSeriesStream)));
+
             TimeSeriesStreamSessions[session.SessionID].Start(threadArgs);
 
             Console.WriteLine($"Session {session.SessionID} connected");
         }
 
+        private void SendConnectionDataGuids(WebSocketSession session, string message)
+        {
+            var connectionGuid = (string)JsonConvert.
+                DeserializeObject<JsonRpcRequest>(message).Params.First();
+
+            session.Send(JsonConvert.SerializeObject(Handler
+                .GetConnectionDataGuidsFromStorage(connectionGuid)));
+        }
+
         private void SendConnectionsGuids(WebSocketSession session)
         {
-            session.Send(JsonConvert.SerializeObject(Handler.GetConnectionsGuidFromStorage()));
+            session.Send(JsonConvert.SerializeObject(Handler.
+                GetConnectionsGuidFromStorage()));
         }
 
     }

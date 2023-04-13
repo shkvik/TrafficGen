@@ -28,9 +28,9 @@ namespace SNN.WebSocket
         public string Jsonrpc { get => "2.0"; }
 
         [JsonProperty("result")]
-        public string Result { get; set; }
+        public object Result { get; set; }
 
         [JsonProperty("id")]
-        public long Id { get => DateTime.Now.Ticks; }
+        public long Id { get => DateTime.Now.ToFileTimeUtc(); }
     }
 }
