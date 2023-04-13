@@ -18,10 +18,6 @@ using TrafficGen;
 
 namespace SNN.Modbus
 {
-    public class Sequence
-    {
-        public float Value { get; set; }
-    }
 
     [Flags]
     public enum Mode
@@ -37,7 +33,7 @@ namespace SNN.Modbus
         InputRegisters
     }
 
-    class Connection
+    public class Connection
     {
         private ModbusServer ModbusServer;
 
@@ -54,8 +50,12 @@ namespace SNN.Modbus
         public delegate bool[] ReadBoolean(int startingAddress, int quantity);
         public delegate int[] ReadInt(int startingAddress, int quantity);
 
-        private Dictionary<string, Thread> FunctionProcessing;
-        public Storage Storage;
+        
+        public Storage Storage { get; }
+        private Dictionary<string, Thread> FunctionProcessing { get; set; }
+        public SequenceTransporter<int> SequenceTransporterTest { get; set; }
+
+
 
         public Connection(byte[] serverIP, Mode mode = Mode.OnlyRead)
         {
@@ -70,7 +70,7 @@ namespace SNN.Modbus
 
             FunctionProcessing = new Dictionary<string, Thread>();
 
-            Server = $"{serverIP}:502";
+            Server = $"{BytesToString(serverIP)}:502";
             Client = GetClientAddress(ModbusClient);
 
             Storage = new Storage(Client, Server);
@@ -83,9 +83,12 @@ namespace SNN.Modbus
                 Storage.InputRegisters.AddColumn();
                 Storage.Coils.AddColumn();
             }
-            
 
+            SequenceTransporterTest = new SequenceTransporter<int>("../../sinus/sin_0.csv");
 
+            var test = new RegisterController(ModbusServer);
+
+            Storage.CreateMap();
 
             switch (mode)
             {
@@ -335,7 +338,7 @@ namespace SNN.Modbus
                         UseWriteDelegate(
                             writeFunction,
                             singleCoil,
-                            singleRegister: Convert.ToInt16(rand.Next(0, 10000)),
+                            singleRegister: Convert.ToInt16(SequenceTransporterTest.GetNextValue()),
                             multipleCoils,
                             multipleRegisters
                         );
@@ -434,16 +437,6 @@ namespace SNN.Modbus
         }
 
 
-        public List<Sequence> GetSequenceFromCsv(string path)
-        {
-            using (var reader = new StreamReader(path))
-            using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
-            {
-                var records = csv.GetRecords<Sequence>();
-                return records.ToList();
-            }
-        }
-
         public static string GetClientAddress(ModbusClient client)
         {
             Type myType = typeof(ModbusClient);
@@ -469,21 +462,6 @@ namespace SNN.Modbus
 
             return result;
         }
-        private void GenerateTestCsv()
-        {
 
-            var records = new List<Sequence>();
-
-            for(int i = 0; i < 100; i++)
-            {
-                records.Add(new Sequence() { Value = i });
-            }
-
-            using (var writer = new StreamWriter("../../file.csv"))
-            using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
-            {
-                csv.WriteRecords(records);
-            }
-        }
     }
 }

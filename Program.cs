@@ -13,7 +13,7 @@ namespace TrafficGen
 {
     internal class Program
     {
-        public static bool Debug = true;
+        public static bool Debug = false;
 
         static void Main(string[] args)
         {
@@ -22,7 +22,7 @@ namespace TrafficGen
 
             var httpServer = new HttpServer();
 
-            var webSocketServer = new WSServer();
+            var webSocketServer = new WSServer(modbusGenerator);
 
         }
     }

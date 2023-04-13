@@ -7,6 +7,7 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using TrafficGen;
 
 namespace SNN.HttpServer
 {
@@ -61,7 +62,11 @@ namespace SNN.HttpServer
             Listener.Prefixes.Add("http://localhost:8081/getData/");
             Listener.Start();
 
-            Console.WriteLine("Http Server started.");
+            if (Program.Debug)
+            {
+                Console.WriteLine("Http Server started.");
+            }
+           
 
             HttpServerGetter = new Thread(new ParameterizedThreadStart(MainHttpServerGetter));
             HttpServerGetter.Start(this);

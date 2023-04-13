@@ -16,84 +16,52 @@ namespace SNN.Modbus
 {
     public class MBGenerator
     {
-        private ModbusServer Server;
 
-        private ModbusServer Server2;
-
-        private ModbusClient Client;
-
-        private ModbusClient Client2;
-
-        private Thread GenerateModbusTraffic;
-
-        private List<Connection> Connections;
-
-        private StreamHandler StreamHandler;
-
-        private void MainGenerateModbusTraffic(object o)
-        {
-            if (o is MBGenerator generator)
-            {
-                short value = 0;
-                int counter = 0;
-                while (true)
-                {
-
-                    Thread.Sleep(1000);
-                    Console.WriteLine(Connections[2].Storage.HoldingRegisters.Guid);
-                    for (int i = 0; i < 200; i++)
-                    {
-                        if(Connections != null)
-                        {
-
-                            Console.Write($"[{Connections[2].Storage.Coils.TimeSeriesList[1].TimeSerias[i]}]");
-                        }
-                    }
-                    Console.WriteLine("----");
-                    counter++;
-                }
-
-            }
-        }
+        private Thread GenerateModbusTraffic { get; set; }
+        private List<Connection> Connections { get; set; }
 
         public MBGenerator()
         {
-            StreamHandler = new StreamHandler();
-
-            Server = new EasyModbus.ModbusServer();
-            Server.LocalIPAddress = new IPAddress(new byte[] { 127, 0, 0, 228 });
-            Server.Port = 502;
-            Server.Listen();
-
-            Server2 = new EasyModbus.ModbusServer();
-            Server2.LocalIPAddress = new IPAddress(new byte[] { 127, 0, 0, 229 });
-            Server2.Port = 502;
-            Server2.Listen();
-
-
-            Client = new EasyModbus.ModbusClient("127.0.0.228", 502);
-            Client.Connect("127.0.0.228", 502);
-
-
-            GetPort(Client);
-            
-
-            Client2 = new EasyModbus.ModbusClient("127.0.0.229", 502);
-            Client2.Connect();
-            GetPort(Client2);
-
 
             Connections = new List<Connection>();
 
             for (int i = 0; i < 10; i++)
             {
-                Connections.Add(new Connection(new byte[] { 127, 0, 0, Convert.ToByte(110 + i) }, Mode.ReadWrite));
+                Connections.Add(new Connection(
+                    new byte[] { 127, 0, 0, Convert.ToByte(110 + i) }, Mode.OnlyRead));
             }
 
-            GenerateModbusTraffic = new Thread(new ParameterizedThreadStart(MainGenerateModbusTraffic));
+            GenerateModbusTraffic = new Thread(
+                new ParameterizedThreadStart(MainGenerateModbusTraffic));
+
             GenerateModbusTraffic.Start(this);
         }
 
+        private void MainGenerateModbusTraffic(object o)
+        {
+            if (o is MBGenerator generator)
+            {
+                int counter = 0;
+                Connections[2].Storage.PrintAllGuids();
+
+                
+
+                while (true)
+                {
+
+                    Thread.Sleep(1000);
+                    if (false)
+                    {
+                        Console.WriteLine(Storage
+                            .GetTsSequenseByGuid(Connections[2].Storage
+                                .ActivityCoils.Guid.ToString()));
+                    }
+
+                    counter++;
+                }
+
+            }
+        }
 
         public static string GetPort(ModbusClient client)
         {
@@ -107,6 +75,14 @@ namespace SNN.Modbus
             string ip = ((System.Net.IPEndPoint) reflectionClient.Client.LocalEndPoint).Address.ToString();
 
             return $"{ip}:{port}";
+        }
+
+        public IEnumerable<Connection> GetConnections()
+        {
+            foreach(var item in Connections)
+            {
+                yield return item;
+            }
         }
     }
 }

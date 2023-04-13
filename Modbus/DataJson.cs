@@ -49,23 +49,38 @@ namespace SNN.Modbus.Json
     {
         public FunctionsActivity FunctionsActivity = new FunctionsActivity();
 
-        public List<TimeSerias<short>>    HoldingRegisters = new List<TimeSerias<short>>();
-        public List<TimeSerias<bool>>   DiscreteInputs = new List<TimeSerias<bool>>();
-        public List<TimeSerias<short>>    InputRegisters = new List<TimeSerias<short>>();
-        public List<TimeSerias<bool>>   Coils = new List<TimeSerias<bool>>();
+        public List<TimeSerias<short>>      HoldingRegisters = new List<TimeSerias<short>>();
+        public List<TimeSerias<bool>>       DiscreteInputs = new List<TimeSerias<bool>>();
+        public List<TimeSerias<short>>      InputRegisters = new List<TimeSerias<short>>();
+        public List<TimeSerias<bool>>       Coils = new List<TimeSerias<bool>>();
     }
 
-    public class ConnectionPacket
+    public class ConnectionsPage
     {
-        public long TimeStamp;
-        public string Client;
-        public string Server;
-        public string Protocol;
-        public ModbusData Modbus = new ModbusData();
+        public string guid;
+        public string client;
+        public string server;
+        public string protocol;
+        public string status;
+        public int trained;
     }
 
-    public class DataJson
+    public class ConnectionJson
     {
-        public List<ConnectionPacket> packets = new List<ConnectionPacket>();
+
+        public string guid;
+        public string client;
+        public string server;
+
+        public List<string> holdingRegisters;
+        public List<string> discreteInputs;
+        public List<string> inputRegisters;
+        public List<string> coils;
+
+    }
+
+    public class ConnectionsJson
+    {
+        public List<ConnectionJson> connections = new List<ConnectionJson>();
     }
 }

@@ -1,4 +1,5 @@
-﻿using SNN.HttpServer;
+﻿using Newtonsoft.Json;
+using SNN.HttpServer;
 using SNN.Modbus.Json;
 using System;
 using System.Collections.Generic;
@@ -142,7 +143,7 @@ namespace SNN.Modbus
     }
 
 
-    class Storage
+    public class Storage
     {
 
         public string Client { get; private set; }
@@ -172,9 +173,9 @@ namespace SNN.Modbus
         public BufferCollection<short>  InputRegisters;
         public BufferCollection<bool>   Coils;
 
-        public Dictionary<string, List<int>>    BufferDictActivity;
-        public Dictionary<string, List<short>>  BufferDictFloat;
-        public Dictionary<string, List<bool>>   BufferDictLogic;
+        public static Dictionary<string, List<int>>    BufferDictActivity   = new Dictionary<string, List<int>>();
+        public static Dictionary<string, List<short>>  BufferDictFloat      = new Dictionary<string, List<short>>();
+        public static Dictionary<string, List<bool>>   BufferDictLogic      = new Dictionary<string, List<bool>>();
 
         public Storage(string client, string server) 
         {
@@ -191,7 +192,6 @@ namespace SNN.Modbus
             ActivityInputRegisters      = new Buffer<int>();
             ActivityHoldingRegisters    = new Buffer<int>();
 
-
             ReadCoils               = new Buffer<int>();
             ReadDiscreteInputs      = new Buffer<int>();
             ReadHoldingRegisters    = new Buffer<int>();
@@ -201,16 +201,10 @@ namespace SNN.Modbus
             WriteMultipleCoils      = new Buffer<int>();
             WriteMultipleRegister   = new Buffer<int>();
 
-
             HoldingRegisters = new BufferCollection<short>();
             DiscreteInputs   = new BufferCollection<bool>();
             InputRegisters   = new BufferCollection<short>();
             Coils            = new BufferCollection<bool>();
-
-
-            BufferDictActivity  = new Dictionary<string, List<int>>();
-            BufferDictFloat     = new Dictionary<string, List<short>>();
-            BufferDictLogic     = new Dictionary<string, List<bool>>();
 
             Guid = Guid.NewGuid();
 
@@ -278,14 +272,14 @@ namespace SNN.Modbus
 
         private void PasteFunctionsMap()
         {
-            BufferDictActivity.Add(ReadCoils.Guid.ToString(), ReadCoils.GetTimeSeries());
-            BufferDictActivity.Add(ReadDiscreteInputs.Guid.ToString(), ReadDiscreteInputs.GetTimeSeries());
-            BufferDictActivity.Add(ReadHoldingRegisters.Guid.ToString(), ReadHoldingRegisters.GetTimeSeries());
-            BufferDictActivity.Add(ReadInputRegisters.Guid.ToString(), ReadInputRegisters.GetTimeSeries());
-            BufferDictActivity.Add(WriteSingleCoil.Guid.ToString(), WriteSingleCoil.GetTimeSeries());
-            BufferDictActivity.Add(WriteSingleRegister.Guid.ToString(), WriteSingleRegister.GetTimeSeries());
-            BufferDictActivity.Add(WriteMultipleCoils.Guid.ToString(), WriteMultipleCoils.GetTimeSeries());
-            BufferDictActivity.Add(WriteMultipleRegister.Guid.ToString(), WriteMultipleRegister.GetTimeSeries());
+            BufferDictActivity.Add(ReadCoils.Guid.ToString(),               ReadCoils.GetTimeSeries());
+            BufferDictActivity.Add(ReadDiscreteInputs.Guid.ToString(),      ReadDiscreteInputs.GetTimeSeries());
+            BufferDictActivity.Add(ReadHoldingRegisters.Guid.ToString(),    ReadHoldingRegisters.GetTimeSeries());
+            BufferDictActivity.Add(ReadInputRegisters.Guid.ToString(),      ReadInputRegisters.GetTimeSeries());
+            BufferDictActivity.Add(WriteSingleCoil.Guid.ToString(),         WriteSingleCoil.GetTimeSeries());
+            BufferDictActivity.Add(WriteSingleRegister.Guid.ToString(),     WriteSingleRegister.GetTimeSeries());
+            BufferDictActivity.Add(WriteMultipleCoils.Guid.ToString(),      WriteMultipleCoils.GetTimeSeries());
+            BufferDictActivity.Add(WriteMultipleRegister.Guid.ToString(),   WriteMultipleRegister.GetTimeSeries());
         }
 
         private void PastLogicRegistersMap()
@@ -324,6 +318,80 @@ namespace SNN.Modbus
             PastFloatRegisterMap();
         }
 
+        public void PrintAllGuids()
+        {
+
+            Console.WriteLine($"ReadCoils:                  {ReadCoils.Guid}");
+            Console.WriteLine($"ReadDiscreteInputs:         {ReadDiscreteInputs.Guid}");
+            Console.WriteLine($"ReadInputRegisters:         {ReadInputRegisters.Guid}");
+            Console.WriteLine($"WriteSingleCoil:            {WriteSingleCoil.Guid}");
+            Console.WriteLine($"WriteSingleRegister:        {WriteSingleRegister.Guid}");
+            Console.WriteLine($"WriteMultipleCoils:         {WriteMultipleCoils.Guid}");
+            Console.WriteLine($"WriteMultipleRegister:      {WriteMultipleRegister.Guid}");
+
+            Console.WriteLine("---------------------------------------------------------------");
+
+            Console.WriteLine($"ActivityFunctions:          {ActivityFunctions.Guid}");
+            Console.WriteLine($"ActivityDiscreteInputs:     {ActivityDiscreteInputs.Guid}");
+            Console.WriteLine($"ActivityCoils:              {ActivityCoils.Guid}");
+            Console.WriteLine($"ActivityInputRegisters:     {ActivityInputRegisters.Guid}");
+            Console.WriteLine($"ActivityHoldingRegisters:   {ActivityHoldingRegisters.Guid}");
+
+            Console.WriteLine("---------------------------------------------------------------");
+            //*------------------------------------------------------------------------------------------*//
+            //*------------------------------------------------------------------------------------------*//
+            //*------------------------------------------------------------------------------------------*//
+            Console.WriteLine($"HoldingRegisters:           {HoldingRegisters.Guid}");
+
+            foreach (var (item, index) in HoldingRegisters.TimeSeriesList.Select((value, i) => (value, i)))
+                Console.WriteLine($"Register[{index}]:                ----{item.Guid}");
+
+            Console.WriteLine("---------------------------------------------------------------");
+            //*------------------------------------------------------------------------------------------*//
+            //*------------------------------------------------------------------------------------------*//
+            //*------------------------------------------------------------------------------------------*//
+            Console.WriteLine($"DiscreteInputs:             {DiscreteInputs.Guid}");
+
+            foreach (var (item, index) in DiscreteInputs.TimeSeriesList.Select((value, i) => (value, i)))
+                Console.WriteLine($"Register[{index}]:                ----{item.Guid}");
+
+            Console.WriteLine("---------------------------------------------------------------");
+            //*------------------------------------------------------------------------------------------*//
+            //*------------------------------------------------------------------------------------------*//
+            //*------------------------------------------------------------------------------------------*//
+            Console.WriteLine($"InputRegisters:             {InputRegisters.Guid}");
+
+            foreach (var (item, index) in InputRegisters.TimeSeriesList.Select((value, i) => (value, i)))
+                Console.WriteLine($"Register[{index}]:                ----{item.Guid}");
+
+            Console.WriteLine("---------------------------------------------------------------");
+            //*------------------------------------------------------------------------------------------*//
+            //*------------------------------------------------------------------------------------------*//
+            //*------------------------------------------------------------------------------------------*//
+            Console.WriteLine($"Coils:                      {Coils.Guid}");
+
+            foreach (var (item, index) in Coils.TimeSeriesList.Select((value, i) => (value, i)))
+                Console.WriteLine($"Register[{index}]:                ----{item.Guid}");
+
+            Console.WriteLine("---------------------------------------------------------------");
+        }
+
+
+        public static string GetTsSequenseByGuid(string guid)
+        {
+
+            if (BufferDictActivity.ContainsKey(guid))
+                return JsonConvert.SerializeObject(BufferDictActivity[guid]);
+
+            if (BufferDictFloat.ContainsKey(guid))
+                return JsonConvert.SerializeObject(BufferDictFloat[guid]);
+
+            if (BufferDictLogic.ContainsKey(guid))   
+                return JsonConvert.SerializeObject(BufferDictLogic[guid]);
+
+            return JsonConvert.SerializeObject("result");
+        }
+
         private void Push<T>(BufferCollection<T> buffer, List<T> value)
         {
             try
@@ -340,4 +408,5 @@ namespace SNN.Modbus
             
         }
     }
+    
 }
