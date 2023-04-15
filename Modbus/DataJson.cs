@@ -58,6 +58,7 @@ namespace SNN.Modbus.Json
     public class ConnectionsPage
     {
         public string guid;
+        public string timeSeriasGuid;
         public string client;
         public string server;
         public string protocol;

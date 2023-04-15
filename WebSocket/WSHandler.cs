@@ -69,9 +69,15 @@ namespace SNN.WebSocket
         {
             foreach(var item in _generator.GetConnections())
             {
+                var show = _generator.GetConnection(item.Guid.ToString())
+                        .Storage.ActivityFunctions.Guid.ToString();
+
                 yield return  new ConnectionsPage()
                 {
                     guid = item.Guid.ToString(),
+                    timeSeriasGuid = _generator.GetConnection(item.Guid.ToString())
+                        .Storage.ActivityFunctions.Guid.ToString(),
+
                     client = item.Client,
                     server = item.Server,
                     protocol = "Modbus",

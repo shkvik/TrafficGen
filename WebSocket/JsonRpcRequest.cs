@@ -31,6 +31,16 @@ namespace SNN.WebSocket
         public object Result { get; set; }
 
         [JsonProperty("id")]
-        public long Id { get => DateTime.Now.ToFileTimeUtc(); }
+        public long Id 
+        {
+            get
+            {
+                // Вычисляем разницу между текущей датой и временем и 1 января 1970 года
+                TimeSpan timeSpan = DateTime.Now - new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+                // Получаем количество секунд, прошедших с 1 января 1970 года
+                return (long)timeSpan.TotalSeconds;
+            }
+                
+        }
     }
 }

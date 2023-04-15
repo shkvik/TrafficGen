@@ -223,6 +223,8 @@ namespace SNN.Modbus
                         var ReadInputRegisters = rand.Next(0, 40);
                         var ReadDiscreteInputs = rand.Next(0, 40);
 
+                        Storage.UpdateActivityFunctions();
+
                         switch (function)
                         {
                             case ReadFunction.ReadCoils:
@@ -246,7 +248,7 @@ namespace SNN.Modbus
                                 break;
                         }
 
-                        Storage.UpdateActivityFunctions();
+                        
                     }
                     catch (Exception error)
                     {

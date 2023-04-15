@@ -54,6 +54,11 @@ namespace TrafficGen.WebSocket
                     {
                         try
                         {
+                            var show = JsonConvert.SerializeObject(new JsonRpcResponse()
+                            {
+                                Result = Storage.GetTsSequenseByGuid(threadArgs.Item2)
+                            });
+
                             threadArgs.Item1.Send(JsonConvert.SerializeObject(new JsonRpcResponse()
                             {
                                 Result = Storage.GetTsSequenseByGuid(threadArgs.Item2)
@@ -69,7 +74,7 @@ namespace TrafficGen.WebSocket
                         
                     }
                     
-                    Thread.Sleep(2000);
+                    Thread.Sleep(500);
                 }
 
             }
@@ -109,15 +114,18 @@ namespace TrafficGen.WebSocket
 
         private void OnSessionClosed(WebSocketSession session, CloseReason reason)
         {
+            session.Close();
             TimeSeriesStreamSessions.Remove(session.SessionID);
 
             Console.WriteLine($"Session {session.SessionID} closed: {reason}");
+            Console.WriteLine($"Thread {session.SessionID} removed");
             Console.WriteLine("Clients: ");
 
             foreach (var item in TimeSeriesStreamSessions)
             {
                 Console.WriteLine(item.Key);
             }
+
         }
 
         private void OpenNewStream(WebSocketSession session, string message)

@@ -34,6 +34,8 @@ namespace SNN.Modbus
         {
             if(o is RegisterController controller)
             {
+                var counter = 0;
+                var test = false;
                 while(true)
                 {
                     Server.inputRegisters.localArray[1] = SinusSequenseList[1].GetNextValue();
@@ -46,6 +48,31 @@ namespace SNN.Modbus
                     Server.holdingRegisters.localArray[3] = SinusSequenseList[3].GetNextValue();
                     Server.holdingRegisters.localArray[4] = SinusSequenseList[4].GetNextValue();
 
+                    Server.coils.localArray[1] = test;
+                    Server.coils.localArray[2] = test;
+                    Server.coils.localArray[3] = test;
+                    Server.coils.localArray[4] = test;
+
+                    Server.discreteInputs.localArray[1] = test;
+                    Server.discreteInputs.localArray[2] = test;
+                    Server.discreteInputs.localArray[3] = test;
+                    Server.discreteInputs.localArray[4] = test;
+
+                    if(counter > 8)
+                    {
+                        counter = 0;
+                    }
+
+                    if (counter > 4)
+                    {
+                        test = false;
+                        
+                    }
+                    else
+                    {
+                        test = true;
+                    }
+                    counter++;
                     Thread.Sleep(1000);
                 }
             }

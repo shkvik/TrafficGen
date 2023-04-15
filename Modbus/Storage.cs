@@ -33,6 +33,7 @@ namespace SNN.Modbus
 
     public class Buffer<T> : IBuffer<T>
     {
+        private bool InitCounetr = false;
         private int BufferSize = 200;
         private int CurrentCount;
 
@@ -68,14 +69,25 @@ namespace SNN.Modbus
             {
                 TimeSerias[CurrentCount] = value;
             }
-
             CurrentCount++;
         }
 
 
         public T GetLastValue()
         {
-            return CurrentCount < BufferSize ? TimeSerias[CurrentCount] : TimeSerias[BufferSize - 1];            
+            if(TimeSerias.Count == BufferSize)
+            {
+                if (CurrentCount < BufferSize)
+                {
+                    return CurrentCount > 1 ? TimeSerias[CurrentCount - 1] : TimeSerias[0];
+                }
+                else
+                {
+                    return TimeSerias[BufferSize - 1];
+                }
+            }
+            return default(T);
+            //return CurrentCount < BufferSize ? TimeSerias[CurrentCount] : TimeSerias[BufferSize - 1];            
         }
 
         private void CheckUpdateCounter()
@@ -237,7 +249,7 @@ namespace SNN.Modbus
             var buffer = (Buffer<int>)fieldInfo.GetValue(this);
             try
             {
-
+                buffer.Push(value);
             }
             catch(Exception error)
             {
@@ -252,12 +264,21 @@ namespace SNN.Modbus
 
         public void UpdateActivityFunctions()
         {
-            ActivityFunctions.Push(
-                ActivityHoldingRegisters.GetLastValue() +
-                ActivityDiscreteInputs.GetLastValue() +
-                ActivityInputRegisters.GetLastValue() +
-                ActivityCoils.GetLastValue()
-            );
+            var res = 0;
+
+            res += ReadCoils.GetLastValue();
+            res += ReadDiscreteInputs.GetLastValue();
+            res += ReadHoldingRegisters.GetLastValue();
+            res += ReadInputRegisters.GetLastValue();
+
+            res += WriteSingleCoil.GetLastValue();
+            res += WriteSingleRegister.GetLastValue();
+            res += WriteMultipleCoils.GetLastValue();
+            res += WriteMultipleRegister.GetLastValue();
+
+
+            this.ActivityFunctions.Push(res);
+            
         }
 
 
@@ -377,20 +398,22 @@ namespace SNN.Modbus
         }
 
 
-        public static string GetTsSequenseByGuid(string guid)
+        public static List<int> GetTsSequenseByGuid(string guid)
         {
-
             if (BufferDictActivity.ContainsKey(guid))
-                return JsonConvert.SerializeObject(BufferDictActivity[guid]);
+                return BufferDictActivity[guid].Select(x => x).ToList();
 
             if (BufferDictFloat.ContainsKey(guid))
-                return JsonConvert.SerializeObject(BufferDictFloat[guid]);
+                return BufferDictFloat[guid].Select(x => (int)x).ToList();
 
-            if (BufferDictLogic.ContainsKey(guid))   
-                return JsonConvert.SerializeObject(BufferDictLogic[guid]);
-
-            return JsonConvert.SerializeObject("result");
+            if (BufferDictLogic.ContainsKey(guid))
+            {
+                return BufferDictLogic[guid].Select(x => x ? 1 : 0).ToList();
+            }
+               
+            return default;
         }
+
 
         private void Push<T>(BufferCollection<T> buffer, List<T> value)
         {

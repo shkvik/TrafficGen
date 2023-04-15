@@ -12,6 +12,7 @@ using System.Threading;
 using System.Xml.Linq;
 using System.Collections.Generic;
 using System.Linq;
+using System.Data;
 
 namespace SNN.Modbus
 {
@@ -54,9 +55,19 @@ namespace SNN.Modbus
                     Thread.Sleep(1000);
                     if (false)
                     {
-                        //Console.WriteLine(Storage
-                        //    .GetTsSequenseByGuid(Connections[2].Storage
-                        //        .ActivityCoils.Guid.ToString()));
+                        var tmp = Storage.GetTsSequenseByGuid(Connections[1]
+                            .Storage.Coils.GetTimeSeriasGuid(1).ToString());
+
+                        if (tmp != null)
+                        {
+                            foreach (var item in tmp)
+                            {
+                                Console.Write($"[{item}]");
+
+                            }
+                            Console.WriteLine();
+                        }
+                        
                     }
 
                     counter++;
