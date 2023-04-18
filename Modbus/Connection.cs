@@ -35,27 +35,24 @@ namespace SNN.Modbus
 
     public class Connection
     {
-        private ModbusServer ModbusServer;
-
-        private ModbusClient ModbusClient;
-
+        public StateHandler StateHandler { get; private set; }
+        public RegisterController RegisterController { get; private set; }
+        public Storage Storage { get; private set; }
         public Guid Guid { get; private set; }
         public string Client { get; set; }
         public string Server { get; set; }
 
-        public int DefaultStartingAddress = 0;
-        public int DefaultQuantity = 4;
-        public int DefaultDelay = 1000;
-
-        public delegate bool[] ReadBoolean(int startingAddress, int quantity);
-        public delegate int[] ReadInt(int startingAddress, int quantity);
-
         
-        public Storage Storage { get; }
+
+
+        private int DefaultStartingAddress = 0;
+        private int DefaultQuantity = 4;
+        private int DefaultDelay = 1000;
+        private delegate bool[] ReadBoolean(int startingAddress, int quantity);
+        private delegate int[] ReadInt(int startingAddress, int quantity);
         private Dictionary<string, Thread> FunctionProcessing { get; set; }
-        public SequenceTransporter<int> SequenceTransporterTest { get; set; }
-
-
+        private ModbusServer ModbusServer;
+        private ModbusClient ModbusClient;
 
         public Connection(byte[] serverIP, Mode mode = Mode.OnlyRead)
         {
@@ -84,11 +81,10 @@ namespace SNN.Modbus
                 Storage.Coils.AddColumn();
             }
 
-            SequenceTransporterTest = new SequenceTransporter<int>("../../sinus/sin_0.csv");
-
-            var test = new RegisterController(ModbusServer);
-
+            RegisterController = new RegisterController(ModbusServer);
             Storage.CreateMap();
+
+            StateHandler = new StateHandler(Storage, RegisterController);
 
             switch (mode)
             {
@@ -218,10 +214,10 @@ namespace SNN.Modbus
                     {
                         UseReadDelegate(readFunction);
 
-                        var ReadCoils = rand.Next(0, 40);
-                        var ReadHoldingRegisters = rand.Next(0, 40);
-                        var ReadInputRegisters = rand.Next(0, 40);
-                        var ReadDiscreteInputs = rand.Next(0, 40);
+                        var ReadCoils = rand.Next(1, 40);
+                        var ReadHoldingRegisters = rand.Next(1, 40);
+                        var ReadInputRegisters = rand.Next(1, 40);
+                        var ReadDiscreteInputs = rand.Next(1, 40);
 
                         Storage.UpdateActivityFunctions();
 
@@ -340,7 +336,7 @@ namespace SNN.Modbus
                         UseWriteDelegate(
                             writeFunction,
                             singleCoil,
-                            singleRegister: Convert.ToInt16(SequenceTransporterTest.GetNextValue()),
+                            singleRegister, //: Convert.ToInt16(SequenceTransporterTest.GetNextValue()),
                             multipleCoils,
                             multipleRegisters
                         );

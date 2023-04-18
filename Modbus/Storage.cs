@@ -33,10 +33,9 @@ namespace SNN.Modbus
 
     public class Buffer<T> : IBuffer<T>
     {
-        private bool InitCounetr = false;
         private int BufferSize = 200;
-        private int CurrentCount;
 
+        public int CurrentCount { get; private set; }
         public Guid Guid { get; private set; }
         public List<T> TimeSerias { get; private set; }
 
@@ -45,15 +44,28 @@ namespace SNN.Modbus
             InitBuffer();
         }
 
+        private void FillBufferDefaultValues()
+        {
+            if(TimeSerias != null)
+            {
+                for (int i = 0; i < BufferSize; i++)
+                    TimeSerias.Add(default(T));
+            }
+            
+        }
+
         private void InitBuffer()
         {
             this.Guid = Guid.NewGuid();
             this.TimeSerias = new List<T>(BufferSize);
             this.CurrentCount = 0;
+            FillBufferDefaultValues();
+        }
 
-            for (int i = 0; i < BufferSize; i++)
-                TimeSerias.Add(default(T));
-
+        public void ClearBuffer()
+        {
+            this.TimeSerias.Clear();
+            FillBufferDefaultValues();
         }
 
         public void Push(T value)
@@ -62,8 +74,10 @@ namespace SNN.Modbus
 
             if (CurrentCount > BufferSize - 1)
             {
-                TimeSerias.RemoveAt(0);
-                TimeSerias.Add(value);
+                //TimeSerias.RemoveAt(0);
+                //TimeSerias.Add(value);
+                ClearBuffer();
+                CurrentCount = 0;
             }
             else
             {
@@ -86,8 +100,7 @@ namespace SNN.Modbus
                     return TimeSerias[BufferSize - 1];
                 }
             }
-            return default(T);
-            //return CurrentCount < BufferSize ? TimeSerias[CurrentCount] : TimeSerias[BufferSize - 1];            
+            return default(T);       
         }
 
         private void CheckUpdateCounter()
@@ -111,7 +124,6 @@ namespace SNN.Modbus
         {
             return bufferFunction.TimeSerias;
         }
-
     }
 
     public class BufferCollection<T> : IBuffer<T>
@@ -407,9 +419,7 @@ namespace SNN.Modbus
                 return BufferDictFloat[guid].Select(x => (int)x).ToList();
 
             if (BufferDictLogic.ContainsKey(guid))
-            {
-                return BufferDictLogic[guid].Select(x => x ? 1 : 0).ToList();
-            }
+                return BufferDictLogic[guid].Select(x => x ? 2 : 1).ToList();
                
             return default;
         }

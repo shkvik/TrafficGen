@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using SNN.Modbus;
+using SNN.Modbus.Json;
 using SNN.WebSocket;
 using SuperSocket.SocketBase;
 using SuperWebSocket;
@@ -48,21 +49,39 @@ namespace TrafficGen.WebSocket
         {
             if (o is Tuple<WebSocketSession, string> threadArgs)
             {
+                var flag = false;
+
                 while (true)
                 {
                     lock(syncObject)
                     {
                         try
                         {
+
                             var show = JsonConvert.SerializeObject(new JsonRpcResponse()
                             {
-                                Result = Storage.GetTsSequenseByGuid(threadArgs.Item2)
+                                Result = new TimeSeriasFrame() 
+                                {
+                                    train = 40,
+                                    status = "Learning",
+                                    ts_original = Storage.GetTsSequenseByGuid(threadArgs.Item2)
+                                } 
                             });
+
+                            var predict = StateHandler.GetPredict(threadArgs.Item2);
 
                             threadArgs.Item1.Send(JsonConvert.SerializeObject(new JsonRpcResponse()
                             {
-                                Result = Storage.GetTsSequenseByGuid(threadArgs.Item2)
+                                Result = new TimeSeriasFrame()
+                                {
+                                    train = 40,
+                                    status = flag ? "Learning" : "Alarm",
+                                    ts_original = Storage.GetTsSequenseByGuid(threadArgs.Item2),
+                                    ts_predict = predict != null ? predict.Select(x => Convert.ToInt32(x)).ToList() : null
+                        }
                             }));
+
+                            //flag = !flag;
                         }
                         catch(Exception error)
                         {

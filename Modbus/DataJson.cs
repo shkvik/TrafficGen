@@ -55,6 +55,16 @@ namespace SNN.Modbus.Json
         public List<TimeSerias<bool>>       Coils = new List<TimeSerias<bool>>();
     }
 
+
+    public class TimeSeriasFrame
+    {
+        public int train { get; set; }
+        public string status { get; set; }
+        public List<int> ts_original { get; set; }
+        public List<int> ts_predict { get; set; }
+    }
+
+
     public class ConnectionsPage
     {
         public string guid;
@@ -66,14 +76,36 @@ namespace SNN.Modbus.Json
         public int trained;
     }
 
+    public class FunctionData
+    {
+        public string code;
+        public string ts_guid;
+        public string name;
+        public string type;
+        public string status;
+        public int train;
+        public string access;
+    }
+
+    public class RegisterData
+    {
+        public int id;
+        public string ts_guid;
+        public string name;
+        public string status;
+        public int train;
+
+    }
+
     public class ConnectionDataPage
     {
-        public string guid;
+        public string activityGuid;
 
-        public List<string> holdingRegisters;
-        public List<string> discreteInputs;
-        public List<string> inputRegisters;
-        public List<string> coils;
+        public List<FunctionData> functions;
+        public List<RegisterData> holdingRegisters;
+        public List<RegisterData> discreteInputs;
+        public List<RegisterData> inputRegisters;
+        public List<RegisterData> coils;
     }
 
     public class ConnectionsJson

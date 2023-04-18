@@ -53,6 +53,26 @@ namespace SNN.Modbus
                 {
 
                     Thread.Sleep(1000);
+
+                    if (false)
+                    {
+                        var connection = Connections[1];
+                        var searchGuid = Connections[1].Storage.HoldingRegisters.GetTimeSeriasGuid(0).ToString();
+
+                        var show = StateHandler.GetPredict(searchGuid);
+
+                        if (show != null)
+                        {
+                            foreach (var item in show)
+                            {
+                                Console.Write($"[{item}]");
+                            }
+                            Console.WriteLine();
+                            Console.WriteLine("------------------------------------------------------------------------");
+                        }
+
+                    }
+
                     if (false)
                     {
                         var tmp = Storage.GetTsSequenseByGuid(Connections[1]

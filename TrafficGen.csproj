@@ -143,6 +143,7 @@
     <Compile Include="Modbus\MBGenerator.cs" />
     <Compile Include="Modbus\RegisterController.cs" />
     <Compile Include="Modbus\SequenceTransporter.cs" />
+    <Compile Include="Modbus\StateHandler.cs" />
     <Compile Include="Modbus\Storage.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

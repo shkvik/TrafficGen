@@ -25,6 +25,19 @@ namespace SNN.Modbus
             GetTimeSeriasFromCsv(path);
         }
 
+        public List<T> GetPredict()
+        {            
+            var result = new List<T>();
+            
+            var tmp_cur = CurrentValue;
+            var predict_num = tmp_cur + 200;
+
+            for (int i = tmp_cur; i < predict_num; i++)
+                result.Add(Sequence[i]);
+
+            return result;
+        }
+
         public T GetNextValue()
         {
             return CurrentValue < Sequence.Count ? 

@@ -8,13 +8,13 @@ using System.Threading.Tasks;
 
 namespace SNN.Modbus
 {
-    class RegisterController
+    public class RegisterController
     {
         //new SequenceTransporter<short>("../../sinus/sin_0.csv");
         private int CsvCount = 10;
         private ModbusServer Server { get; }
         private Thread UpdateRegistersValues { get; set; }
-        private List<SequenceTransporter<short>> SinusSequenseList { get; set; }
+        public List<SequenceTransporter<short>> SinusSequenseList { get; private set; }
 
 
         public RegisterController(ModbusServer server)
@@ -38,15 +38,15 @@ namespace SNN.Modbus
                 var test = false;
                 while(true)
                 {
-                    Server.inputRegisters.localArray[1] = SinusSequenseList[1].GetNextValue();
-                    Server.inputRegisters.localArray[2] = SinusSequenseList[2].GetNextValue();
-                    Server.inputRegisters.localArray[2] = SinusSequenseList[3].GetNextValue();
-                    Server.inputRegisters.localArray[2] = SinusSequenseList[4].GetNextValue();
+                    Server.inputRegisters.localArray[1] = SinusSequenseList[0].GetNextValue();
+                    Server.inputRegisters.localArray[2] = SinusSequenseList[1].GetNextValue();
+                    Server.inputRegisters.localArray[3] = SinusSequenseList[2].GetNextValue();
+                    Server.inputRegisters.localArray[4] = SinusSequenseList[3].GetNextValue();
 
-                    Server.holdingRegisters.localArray[1] = SinusSequenseList[1].GetNextValue();
-                    Server.holdingRegisters.localArray[2] = SinusSequenseList[2].GetNextValue();
-                    Server.holdingRegisters.localArray[3] = SinusSequenseList[3].GetNextValue();
-                    Server.holdingRegisters.localArray[4] = SinusSequenseList[4].GetNextValue();
+                    Server.holdingRegisters.localArray[1] = SinusSequenseList[4].GetNextValue();
+                    Server.holdingRegisters.localArray[2] = SinusSequenseList[5].GetNextValue();
+                    Server.holdingRegisters.localArray[3] = SinusSequenseList[6].GetNextValue();
+                    Server.holdingRegisters.localArray[4] = SinusSequenseList[7].GetNextValue();
 
                     Server.coils.localArray[1] = test;
                     Server.coils.localArray[2] = test;
